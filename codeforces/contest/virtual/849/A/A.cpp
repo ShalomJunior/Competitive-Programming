@@ -1,0 +1,15 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+const string s = "codeforces";
+void solve() {
+    char c; cin >> c;
+    cout << (s.find(c) == string::npos ? "NO" : "YES") << endl;
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int t; cin >> t;
+    while (t--)solve();
+}

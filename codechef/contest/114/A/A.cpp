@@ -1,0 +1,13 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+void solve() {
+    int d; cin >> d;
+    cout << (d == 25 ? "CHRISTMAS" : "ORDINARY") << endl;
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    solve();
+}

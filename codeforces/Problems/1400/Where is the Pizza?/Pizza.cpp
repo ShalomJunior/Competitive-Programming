@@ -1,0 +1,18 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+/*
+1 2 3 4 5 6 7
+2 3 1 7 6 5 4
+2 0 1 0 0 0 0
+*/
+void solve() {
+    int n; cin >> n;
+    vector<int> a(n), b(n), c(n);
+}
+
+int main() {
+    int t; cin >> t;
+    while (t--)solve();
+}
