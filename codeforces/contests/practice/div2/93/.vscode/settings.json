@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "chrono": "cpp",
+        "span": "cpp",
+        "type_traits": "cpp",
+        "bitset": "cpp",
+        "algorithm": "cpp",
+        "format": "cpp",
+        "ostream": "cpp"
+    }
+}
