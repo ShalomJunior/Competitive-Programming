@@ -58,7 +58,6 @@ struct hash61 {
     }
 
     inline uint64_t operator()(const int from, const int to) const {
-        //cerr << from << " ->  " << to << endl;
         assert(0 <= from && from <= to && to <= n - 1);
         return submod(pref[to + 1], mulmod(pref[from], pw[to - from + 1]));
     }
@@ -67,129 +66,150 @@ struct hash61 {
 uint64_t hash61::step = (md >> 2) + rng() % (md >> 1);
 vector<uint64_t> hash61::pw = vector<uint64_t>(1, 1);
 
-template<typename T>
-const T Max(const T& a, const T& b) {
-    return max(a, b);
+#define int long long
+const int N = 26;
+
+int f(int n) {
+    n -= n % 2;
+    int k = n / 2;
+    return k * (k + 1);
 }
 
-template<typename T, const T(*op)(const T&, const T&)>
-class sparseTable {
-public:
-    vector<vector<T>> st;
-    sparseTable(vector<T> vals) {
-        int n = vals.size();
-        int rows = __lg(n) + 1;
-        st.resize(rows);
-        st[0] = vals;
-        for (int j = 1; j < rows; j++) {
-            st[j].resize(n);
-            for (int i = 0; i + (1 << j) <= n; i++) {
-                st[j][i] = op(st[j - 1][i], st[j - 1][i + (1 << (j - 1))]);
-            }
-        }
-    }
-    T query(int l, int r) {
-        int j = __lg(r - l + 1);
-        return op(st[j][l], st[j][r - (1 << j) + 1]);
-    }
-};
+int g(int n) {
+    return n * (n + 1) / 2 - f(n);
+}
 
 void solve() {
     int n, q;
+    cin >> n >> q;
     string s;
-    cin >> n >> q >> s;
-    string r = s;
-    reverse(r.begin(), r.end());
-    auto get = [&](int l, int r) {
-        return make_pair(n - 1 - r, n - 1 - l);
-        };
-    hash61 hs(s);
-    hash61 hr(s);
-    vector<int> odds(n, 1);
-    auto f = [&](int i, int mid) {
-        auto coor = get(i + 1, i + mid);
-        return hs(i - mid, i - 1) != hr(coor.first, coor.second);
-        };
+    cin >> s;
+    string o, e;
     for (int i = 0; i < n; i++) {
-        int L = 1, R = min(i, n - 1 - i);
-        while (L < R) {
-            int mid = (L + R) / 2;
-            if (f(i, mid)) {
-                if (L == mid) f(i, R) ? L = R : R = L;
-                else L = mid;
-            }
-            else R = mid - 1;
-        }
-        if (L == R)odds[i] = 2 * L + 1;
+        i & 1 ? o.push_back(s[i]) : e.push_back(s[i]);
     }
-    vector<int> evens(n);
-    auto g = [&](int i, int mid) {
-        auto coor = get(n - 1 - (i + 2 + mid - 1), n - 1 - (i + 2));
-        return hs(i - mid, i - 1) == hr(coor.first, coor.second);
+    auto r = s;
+    reverse(r.begin(), r.end());
+    hash61 hs(s), hr(r), ho(o), he(e);
+    auto is = [&](int l, int r) {
+        int nl = n - 1 - r;
+        int nr = n - 1 - l;
+        return hs(l, r) == hr(nl, nr);
         };
-    for (int i = 0; i < n - 1; i++) {
-        if (s[i] != s[i + 1])continue;
-        evens[i] = 2;
-        int L = 1, R = min(i, n - 1 - (i + 1));
-        while (L < R) {
-            int mid = (L + R) / 2;
-            if (g(i, mid)) {
-                if (L == mid)g(i, R) ? L = R : R = L;
-                else L = mid;
-            }
-            else R = mid - 1;
-        }
-        if (L == R)evens[i] = 2 * L + 2;
+
+    vector<hash61> h;
+    for (int i = 0; i < N; i++) {
+        h.push_back(hash61(string(n, 'a' + i)));
     }
-    sparseTable<int, Max> o(odds);
-    sparseTable<int, Max> e(evens);
     while (q--) {
-        //cerr << "q = " << q << endl;
         int l, r;
         cin >> l >> r;
         --l, --r;
         int len = r - l + 1;
-        long long ans = 0;
-        int lo = 0, ro = (len - 1) / 2;
-        while (lo < ro) {
-            int mid = (lo + ro) / 2;
-            if (o.query(l + mid, r - mid) >= mid) {
-                if (lo == mid)o.query(l + ro, r - ro) >= ro ? lo = ro : ro = lo;
-                else lo = mid;
-            }
-            else ro = mid - 1;
+        if (len == 1) {
+            cout << 0 << endl;
+            continue;
         }
-        //cerr << "Where" << endl;
-        cerr << "lo = " << lo << endl;
-        ans += max(1LL * (lo + 1) * (lo + 1), 1LL);
-        int le = 1, re = len / 2;
-        while (le < re) {
-            int mid = (le + re) / 2;
-            //cerr << le << " " << mid << " " << re << endl;
-            if (e.query(l + mid - 1, r - mid) >= mid) {
-                if (le == mid)e.query(l + re - 1, r - re) >= re ? le = re : re = le;
-                else le = mid;
-            }
-            else re = mid - 1;
+        int ans = is(l, r) ? 0 : len;
+        int j = s[l] - 'a';
+        if (h[j](0, len - 1) != hs(l, r)) {
+            ans += f(len);
+            if (len % 2 == 0)
+                ans -= len;
         }
-        cerr << "re = " << re << endl;
-        ans += 1LL * re * (re + 1);
-        int all = 1LL * len * (len + 1) / 2;
-        cerr << "all = " << all << endl;
-        cerr << all - ans << endl;
-        //cerr << 1LL * len * (len + 1) / 2 - ans << endl;
-        //cout << endl;
+        int x = (len + 1) / 2;
+        int y = len / 2;
+        bool flag = true;
+        if (l & 1) {
+            if (ho(l / 2, l / 2 + x - 1) != h[j](0, x - 1)) flag = false;
+            if (he((l + 1) / 2, (l + 1) / 2 + y - 1) != h[s[l + 1] - 'a'](0, y - 1)) flag = false;
+        }
+        else {
+            if (he(l / 2, l / 2 + x - 1) != h[j](0, x - 1)) flag = false;
+            if (ho(l / 2, l / 2 + y - 1) != h[s[l + 1] - 'a'](0, y - 1)) flag = false;
+        }
+        if (!flag) {
+            ans += g(len) - 1;
+            if (len % 2)
+                ans -= len;
+        }
+        cout << ans << endl;
     }
-    cout << endl << endl;
 }
 
-int main() {
+signed main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     int t; cin >> t;
     while (t--)solve();
 }
 
+
+
+/*
+
+void solve() {
+    int n, q;
+    cin >> n >> q;
+    string s;
+    cin >> s;
+    string o, e;
+    for (int i = 0; i < n; i++) {
+        i & 1 ? o.push_back(s[i]) : e.push_back(s[i]);
+    }
+    auto r = s;
+    reverse(r.begin(), r.end());
+    hash61 hs(s), hr(r), ho(o), he(e);
+    auto is = [&](int l, int r) {
+        int nl = n - 1 - r;
+        int nr = n - 1 - l;
+        return hs(l, r) == hr(nl, nr);
+        };
+
+    vector<hash61> h;
+    for (int i = 0; i < N; i++) {
+        h.push_back(hash61(string(n, 'a' + i)));
+    }
+    while (q--) {
+        int l, r;
+        cin >> l >> r;
+        --l, --r;
+        int len = r - l + 1;
+        if (len == 1) {
+            cout << 0 << endl;
+            continue;
+        }
+        cerr << l << " -> " << r << endl;
+        int ans = is(l, r) ? 0 : len;
+        cerr << "1 ans " << ans << endl;
+        int j = s[l] - 'a';
+        if (h[j](0, len - 1) != hs(l, r)) {
+            ans += f(len);
+            if (len % 2 == 0)
+                ans -= len;
+        }
+        cerr << "2 ans " << ans << endl;
+
+        int x = (len + 1) / 2;
+        int y = len / 2;
+        bool flag = true;
+        if (l & 1) {
+            if (ho(l / 2, l / 2 + x - 1) != h[j](0, x - 1)) flag = false;
+            if (he((l + 1) / 2, (l + 1) / 2 + y - 1) != h[s[l + 1] - 'a'](0, y - 1)) flag = false;
+        }
+        else {
+            if (he(l / 2, l / 2 + x - 1) != h[j](0, x - 1)) flag = false;
+            if (ho(l / 2, l / 2 + y - 1) != h[s[l + 1] - 'a'](0, y - 1)) flag = false;
+        }
+        if (!flag) {
+            ans += g(len) - 1;
+            if (len % 2)
+                ans -= len;
+        }
+        cerr << "3 ans " << ans << endl;
+        cout << ans << endl;
+    }
+}*/
 // string s = "hallopersohellodevhello";
 // string p = "hello";
 // int n = s.length();

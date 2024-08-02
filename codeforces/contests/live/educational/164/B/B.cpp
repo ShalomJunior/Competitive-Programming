@@ -1,24 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-auto get(vector<int> a) {
-    queue<int> q;
-    for (auto& c : a) q.push(c);
-    vector<pair<int, int>> ans;
-    while (!q.empty()) {
-        int x = q.front();
-        int cnt = 0;
-        while (!q.empty() && q.front() == x) {
-            cnt++;
-            q.pop();
-        }
-        ans.push_back({ x, cnt });
-    }
-    return ans;
-}
-
 void solve() {
-    int n; cin >> n;
+    int n;
+    cin >> n;
     vector<int> a(n);
     for (auto& c : a) cin >> c;
     int cnt = count(a.begin(), a.end(), a[0]);
@@ -30,33 +15,17 @@ void solve() {
         cout << 0 << endl;
         return;
     }
-    for (int i = 1; i < n - 1; i++) {
-        set<int> s = { a[i - 1], a[i], a[i + 1] };
-        if (s.size() == 3) {
-            cout << 0 << endl;
-            return;
+    int ans = 1e9;
+    int m = 0;
+    for (int i = 0; i < n; i++) {
+        if (a[i] != a[0]) {
+            ans = min(ans, m);
+            m = 0;
         }
+        else m++;
     }
-    bool flag = false;
-    for (int i = 1; i < n - 1; i++) {
-        if (flag && a[i - 1] == a[i] && a[i] != a[i + 1]) {
-            cout << 0 << endl;
-            return;
-        }
-    }
-    auto g = get(a);
-    int m = g.size();
-    vector<int> res;
-    for (int i = 0; i < m; i++) {
-        if (i == 0 || i == m - 1) {
-            res.push_back(g[i].second);
-        }
-        else {
-            if (i + 2 == n || a[i] != a[i + 2])
-                res.push_back(g[i + 1].second);
-        }
-    }
-    cout << *min_element(res.begin(), res.end()) << endl;
+    ans = min(ans, m);
+    cout << ans << endl;
 }
 
 int main() {

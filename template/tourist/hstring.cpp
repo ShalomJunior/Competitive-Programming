@@ -65,3 +65,15 @@ struct hash61 {
 
 uint64_t hash61::step = (md >> 2) + rng() % (md >> 1);
 vector<uint64_t> hash61::pw = vector<uint64_t>(1, 1);
+
+
+
+/*
+    hash61 ha(a), hb(b);
+    auto is = [&](int l, int r) {
+        int nl = n - 1 - r;
+        int nr = n - 1 - l;
+        return ha(l, r) == hb(nl, nr);
+    };
+
+*/
