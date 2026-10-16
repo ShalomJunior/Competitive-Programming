@@ -1,46 +1,41 @@
 #include <bits/stdc++.h>
+#define int long long
 using namespace std;
 
-template<typename T>
-class fenwick {
-public:
-    vector<T> arr;
-    fenwick(int n) {
-        arr.resize(n + 3, 0);
-    }
-    void add(int index, T val) {
-        for (; index < arr.size(); index += (index & (-index))) {
-            arr[index] = max(arr[index], val);
+const int N = 1e5;
+void solve() {
+    int n;
+    cin >> n;
+    vector<int> a(n + 1);
+    for (int i = 1; i <= n; i++) cin >> a[i];
+    vector<vector<int>> h(n);
+    for (int k = 1; k * k <= n; k++) {
+        h[k].resize(n + 1);
+        for (int j = n; j > 0; j--) {
+            h[k][j] = 1LL + (j + a[j] + k > n ? 0 : h[k][j + a[j] + k]);
         }
     }
-    T query(int index) {
-        T sum = 0;
-        for (; index > 0; index -= (index & (-index))) {
-            sum = max(sum, arr[index]);
+    int q;
+    cin >> q;
+    while (q--) {
+        int p, k;
+        cin >> p >> k;
+        if (k * k <= n) {
+            cout << h[k][p] << endl;
         }
-        return sum;
-    }
-};
-
-void solve(int t) {
-    int n; cin >> n;
-    vector<int> a(n);
-    for (auto& c : a) cin >> c;
-    int len = 0;
-    fenwick<int> fen(n);
-    for (int i = 0; i < n; i++) {
-        if (i + a[i] < n) {
-            int val = a[i] + 1 + fen.query(i - 1);
-            fen.add(i + a[i], val);
-            len = max(len, val);
+        else {
+            int ans = 0;
+            while (p <= n) {
+                p += a[p] + k;
+                ans++;
+            }
+            cout << max(ans, 1LL) << endl;
         }
     }
-    cout << n - len << endl;
 }
 
-int main() {
+signed main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
-    int t; cin >> t;
-    for (int i = 0; i < t; i++) solve(i + 1);
+    solve();
 }

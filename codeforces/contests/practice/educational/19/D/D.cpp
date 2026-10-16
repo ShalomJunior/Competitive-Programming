@@ -1,68 +1,46 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-class dsu {
-public:
-    vector<int> parents;
-    vector<int> sizes;
-    dsu(int n) {
-        parents.resize(n);
-        iota(parents.begin(), parents.end(), 0);
-        sizes.resize(n, 1);
-    }
-    int root(int u) {
-        return parents[u] == u ? u : parents[u] = root(parents[u]);
-    }
-    bool join(int u, int v) {
-        int a = root(u);
-        int b = root(v);
-        if (a == b) return 0;
-        if (sizes[a] > sizes[b]) swap(a, b);
-        parents[a] = b;
-        sizes[b] += sizes[a];
-        return 1;
-    }
-};
-
+const int INF = 2e9;
 void solve() {
-    int n, m, k;
-    cin >> n >> m >> k;
-    char g[n][m];
+    int n;
+    cin >> n;
+    vector<int> a(n);
+    vector<pair<int, int>> adj(n);
+    vector<int> p(n, -1);
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            cin >> g[i][j];
+        auto& [l, r] = adj[i];
+        cin >> a[i] >> l >> r;
+        if (l > 0) {
+            l--;
+            p[l] = i;
+        }
+        if (r > 0) {
+            r--;
+            p[r] = i;
         }
     }
-    auto h = [&](int i, int j) {
-        return i * m + j;
+    int root = 0;
+    while (p[root] != -1) root++;
+    set<int> S(a.begin(), a.end());
+    function<void(int, int, int)> dfs = [&](int s, int l, int r) {
+        if (s == -1) return;
+        if (l <= a[s] && a[s] <= r) S.erase(a[s]);
+        if (a[s] > l) {
+            dfs(adj[s].first, l, min(a[s] - 1, r));
+        }
+        if (a[s] < r) {
+            dfs(adj[s].second, max(a[s] + 1, l), r);
+        }
         };
-    int N = n * m;
-    dsu ds(N);
+    dfs(root, 0, INF);
+    int ans = 0;
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            if (g[i][j] == '.') {
-                if (i && g[i - 1][j] == '.') ds.join(h(i - 1, j), h(i, j));
-                if (j && g[i][j - 1] == '.') ds.join(h(i, j - 1), h(i, j));
-            }
+        if (S.count(a[i])) {
+            ans++;
         }
     }
-    map<int, set<pair<int, int>>> cnt;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            if (g[i][j] == '.') {
-                if (i && g[i - 1][j] == '*') cnt[ds.root(h(i, j))].insert({ h(i, j), h(i - 1, j) });
-                if (i + 1 < n && g[i + 1][j] == '*') cnt[ds.root(h(i, j))].insert({ h(i, j), h(i + 1, j) });
-                if (j && g[i][j - 1] == '*') cnt[ds.root(h(i, j))].insert({ h(i, j), h(i, j - 1) });
-                if (j + 1 < m && g[i][j + 1] == '*') cnt[ds.root(h(i, j))].insert({ h(i, j), h(i, j + 1) });
-            }
-        }
-    }
-    while (k--) {
-        int i, j;
-        cin >> i >> j;
-        --i, --j;
-        cout << cnt[ds.root(h(i, j))].size() << endl;
-    }
+    cout << ans << endl;
 }
 
 int main() {

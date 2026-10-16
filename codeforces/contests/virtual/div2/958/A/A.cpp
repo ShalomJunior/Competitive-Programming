@@ -2,7 +2,14 @@
 using namespace std;
 
 void solve() {
-
+    int n, k;
+    cin >> n >> k;
+    int ans = 0;
+    while (n > 1) {
+        ans++;
+        n -= k - 1;
+    }
+    cout << ans << endl;
 }
 
 int main() {
